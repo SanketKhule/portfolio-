@@ -53,6 +53,16 @@ function getClientIp(request: Request) {
 function isRateLimited(clientIp: string) {
   const now = Date.now();
   const store = getRateLimitStore();
+  
+  // Clean up expired entries every 100 requests to prevent memory leak
+  if (store.size > 100 && Math.random() < 0.1) {
+    for (const [ip, data] of store.entries()) {
+      if (data.resetAt <= now) {
+        store.delete(ip);
+      }
+    }
+  }
+  
   const current = store.get(clientIp);
 
   if (!current || current.resetAt <= now) {
@@ -73,6 +83,14 @@ function isRateLimited(clientIp: string) {
   });
 
   return false;
+}
+
+function getErrorMessage(error: unknown): string {
+  return isMongoConnectivityError(error)
+    ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
+    : isMongoConfigurationError(error)
+      ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
+      : "Failed to save feedback. Please try again later.";
 }
 
 async function ensureFeedbackIndexes(collection: Collection<FeedbackDocument>) {
@@ -157,11 +175,7 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/feedback error:", error);
 
-    const connectivityMessage = isMongoConnectivityError(error)
-      ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
-      : isMongoConfigurationError(error)
-        ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
-        : "Feedback service is temporarily unavailable. Showing an empty list.";
+    const connectivityMessage = getErrorMessage(error);
 
     return NextResponse.json(
       {
@@ -251,11 +265,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("POST /api/feedback error:", error);
 
-    const failureMessage = isMongoConnectivityError(error)
-      ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
-      : isMongoConfigurationError(error)
-        ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
-        : "Failed to save feedback. Please try again later.";
+    const failureMessage = getErrorMessage(error);
 
     return NextResponse.json(
       { message: failureMessage },

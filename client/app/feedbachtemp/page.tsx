@@ -36,6 +36,10 @@ export default function Page() {
         message?: string;
       };
 
+      if (data.message) {
+        setErrorMessage(data.message);
+      }
+
       if (!response.ok) {
         setErrorMessage(
           data.message ?? "Unable to load feedback right now. Please try again shortly."

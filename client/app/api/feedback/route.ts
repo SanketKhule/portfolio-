@@ -111,15 +111,30 @@ function toFeedbackItem(document: FeedbackDocument): FeedbackItem {
   };
 }
 
-function isMongoConnectivityError(error: unknown) {
-  if (!(error instanceof Error)) {
-    return false;
+function getErrorText(error: unknown) {
+  if (error instanceof Error) {
+    return `${error.name} ${error.message}`.toLowerCase();
   }
 
-  const message = error.message.toLowerCase();
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const maybeMessage = (error as { message?: unknown }).message;
+    if (typeof maybeMessage === "string") {
+      return maybeMessage.toLowerCase();
+    }
+  }
+
+  return "";
+}
+
+function isMongoConnectivityError(error: unknown) {
+  const message = getErrorText(error);
   return (
     message.includes("server selection timed out") ||
     message.includes("etimedout") ||
+    message.includes("econnreset") ||
+    message.includes("econnrefused") ||
+    message.includes("enotfound") ||
+    message.includes("tls") ||
     message.includes("mongoserverselectionerror") ||
     message.includes("replicasetnoprimary") ||
     message.includes("querysrv enotfound")
@@ -127,17 +142,20 @@ function isMongoConnectivityError(error: unknown) {
 }
 
 function isMongoConfigurationError(error: unknown) {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-
-  const message = error.message.toLowerCase();
+  const message = getErrorText(error);
   return (
     message.includes("missing mongodb_uri") ||
     message.includes("authentication failed") ||
     message.includes("bad auth") ||
-    message.includes("invalid scheme")
+    message.includes("invalid scheme") ||
+    message.includes("uri malformed") ||
+    message.includes("must begin with")
   );
+}
+
+function isMongoDriverError(error: unknown) {
+  const message = getErrorText(error);
+  return message.includes("mongo");
 }
 
 export async function GET() {
@@ -161,6 +179,8 @@ export async function GET() {
       ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
       : isMongoConfigurationError(error)
         ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
+        : isMongoDriverError(error)
+          ? "MongoDB request failed. Check Atlas Network Access and Vercel environment variables, then redeploy."
         : "Feedback service is temporarily unavailable. Showing an empty list.";
 
     return NextResponse.json(
@@ -255,6 +275,8 @@ export async function POST(request: Request) {
       ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
       : isMongoConfigurationError(error)
         ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
+        : isMongoDriverError(error)
+          ? "MongoDB request failed. Check Atlas Network Access and Vercel environment variables, then redeploy."
         : "Failed to save feedback. Please try again later.";
 
     return NextResponse.json(

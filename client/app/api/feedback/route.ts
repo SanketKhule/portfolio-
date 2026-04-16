@@ -121,7 +121,22 @@ function isMongoConnectivityError(error: unknown) {
     message.includes("server selection timed out") ||
     message.includes("etimedout") ||
     message.includes("mongoserverselectionerror") ||
-    message.includes("replicasetnoprimary")
+    message.includes("replicasetnoprimary") ||
+    message.includes("querysrv enotfound")
+  );
+}
+
+function isMongoConfigurationError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("missing mongodb_uri") ||
+    message.includes("authentication failed") ||
+    message.includes("bad auth") ||
+    message.includes("invalid scheme")
   );
 }
 
@@ -144,7 +159,9 @@ export async function GET() {
 
     const connectivityMessage = isMongoConnectivityError(error)
       ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
-      : "Feedback service is temporarily unavailable. Showing an empty list.";
+      : isMongoConfigurationError(error)
+        ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
+        : "Feedback service is temporarily unavailable. Showing an empty list.";
 
     return NextResponse.json(
       {
@@ -236,7 +253,9 @@ export async function POST(request: Request) {
 
     const failureMessage = isMongoConnectivityError(error)
       ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
-      : "Failed to save feedback. Please try again later.";
+      : isMongoConfigurationError(error)
+        ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
+        : "Failed to save feedback. Please try again later.";
 
     return NextResponse.json(
       { message: failureMessage },

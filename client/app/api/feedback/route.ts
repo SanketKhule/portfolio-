@@ -158,7 +158,7 @@ export async function GET() {
     console.error("GET /api/feedback error:", error);
 
     const connectivityMessage = isMongoConnectivityError(error)
-      ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
+      ? "Could not connect to MongoDB. In Atlas Network Access allow your runtime IP (for Vercel usually 0.0.0.0/0), then verify MONGODB_URI/MONGODB_DB."
       : isMongoConfigurationError(error)
         ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
         : "Feedback service is temporarily unavailable. Showing an empty list.";
@@ -252,7 +252,7 @@ export async function POST(request: Request) {
     console.error("POST /api/feedback error:", error);
 
     const failureMessage = isMongoConnectivityError(error)
-      ? "Could not connect to MongoDB. Add your current IP in MongoDB Atlas Network Access and verify MONGODB_URI/MONGODB_DB."
+      ? "Could not connect to MongoDB. In Atlas Network Access allow your runtime IP (for Vercel usually 0.0.0.0/0), then verify MONGODB_URI/MONGODB_DB."
       : isMongoConfigurationError(error)
         ? "MongoDB configuration is invalid. Verify MONGODB_URI and MONGODB_DB in your environment."
         : "Failed to save feedback. Please try again later.";

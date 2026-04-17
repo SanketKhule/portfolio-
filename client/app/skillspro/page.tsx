@@ -54,9 +54,9 @@ export default function ProgressWithLabel() {
 
               return (
                 <div key={skill.name} className="space-y-2">
-                  <label htmlFor={id} className="text-sm font-medium text-foreground">{skill.name}</label>
+                  <p className="text-sm font-medium text-foreground">{skill.name}</p>
                   <div className="flex items-center gap-2">
-                    <Progress value={skill.value} id={id} className="flex-1" />
+                    <Progress value={skill.value} id={id} aria-label={skill.name} className="flex-1" />
                     <span className="text-sm font-medium text-muted-foreground">{skill.value}%</span>
                   </div>
                 </div>

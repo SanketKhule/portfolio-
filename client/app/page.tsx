@@ -1,7 +1,6 @@
 "use client";
 import { FloatingNav } from "@/components/ui/floating-navbar";
 import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import SparklesPreview from "./welcome/page";
@@ -14,7 +13,6 @@ const DraggableCardDemoComponent = dynamic(() => import("./project/page").then(m
 const ProgressWithLabel = dynamic(() => import("./skillspro/page"), { loading: () => <div className="h-96 bg-background" /> });
 const SignupPage = dynamic(() => import("./signup/page"), { loading: () => <div className="h-96 bg-background" /> });
 const PointerHighlightDemo = dynamic(() => import("./whoiam/page"), { loading: () => <div className="h-96 bg-background" /> });
-const TypewriterEffectDemo = dynamic(() => import("./reviwe/page").then(mod => ({ default: mod.TypewriterEffectDemo })), { loading: () => <div className="h-96 bg-background" /> });
 
 export default function FloatingNavDemo() {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -85,9 +83,6 @@ export default function FloatingNavDemo() {
         <PointerHighlightDemo/>
       </Suspense>
       <Suspense fallback={<div className="h-96 bg-background" />}>
-        <TypewriterEffectDemo/>
-      </Suspense>
-      <Suspense fallback={<div className="h-96 bg-background" />}>
         <DraggableCardDemoComponent/>
       </Suspense>
       <Suspense fallback={<div className="h-96 bg-background" />}>
@@ -105,7 +100,7 @@ export default function FloatingNavDemo() {
             </h2>
           </div>
 
-          <div className="grid gap-8 border-y border-border py-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 border-y border-border py-8 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <p className="mb-3 text-sm font-semibold">Pages</p>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -113,22 +108,6 @@ export default function FloatingNavDemo() {
                 <li><a href="#skills" className="hover:text-foreground">Skills</a></li>
                 <li><a href="#projects" className="hover:text-foreground">Projects</a></li>
                 <li><a href="#contact" className="hover:text-foreground">Contact</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="mb-3 text-sm font-semibold">Feedback</p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/reviwe" className="hover:text-foreground">
-                    Send Feedback
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/feedbachtemp" className="hover:text-foreground">
-                    View Feedback
-                  </Link>
-                </li>
               </ul>
             </div>
 

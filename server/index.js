@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 
 const contactRouter = require("./routes/contact");
-const feedbackRouter = require("./routes/feedback");
 
 const app = express();
 
@@ -26,7 +25,6 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/contact", contactRouter);
-app.use("/api/feedback", feedbackRouter);
 
 // ── Local dev server ─────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
